@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>YT Downloader Bang 🔥</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #111;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #1e1e1e;
+      padding: 30px;
+      border-radius: 10px;
+      width: 400px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      background: #ff0000;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.8;
+    }
+
+    .result {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>YT Downloader 🔥</h2>
+
+    <input type="text" id="url" placeholder="Masukkan URL YouTube">
+
+    <select id="type">
+      <option value="video">Video</option>
+      <option value="audio">Audio (MP3)</option>
+    </select>
+
+    <select id="quality">
+      <option value="">Best Quality</option>
+      <option value="1080">1080p</option>
+      <option value="720">720p</option>
+      <option value="480">480p</option>
+    </select>
+
+    <button onclick="download()">Download</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+<script>
+async function download() {
+  const url = document.getElementById("url").value;
+  const type = document.getElementById("type").value;
+  const quality = document.getElementById("quality").value;
+  const resultDiv = document.getElementById("result");
+
+  if (!url) {
+    resultDiv.innerHTML = "URL wajib diisi bang!";
+    return;
+  }
+
+  resultDiv.innerHTML = "Sedang mendownload... ⏳";
+
+  try {
+    const res = await fetch("/download", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ url, type, quality })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      resultDiv.innerHTML = data.message;
+    } else {
+      resultDiv.innerHTML = data.error;
+    }
+
+  } catch (err) {
+    resultDiv.innerHTML = "Terjadi error bro 😅";
+  }
+}
+</script>
+
+</body>
+</html>
