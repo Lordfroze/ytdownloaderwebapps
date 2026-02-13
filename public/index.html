@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>YT Downloader Bang 🔥</title>
+  <title>YT Mas Yogs 🔥</title>
   <style>
     body {
       font-family: Arial;
@@ -29,79 +29,95 @@
     }
 
     button {
-      background: #ff0000;
+      background: red;
       color: white;
       cursor: pointer;
     }
 
-    button:hover {
-      opacity: 0.8;
+    .progress-container {
+      background: #333;
+      height: 20px;
+      margin-top: 15px;
+      border-radius: 5px;
+      overflow: hidden;
     }
 
-    .result {
-      margin-top: 15px;
-      font-size: 14px;
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: red;
+      transition: width 0.3s;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>YT Downloader 🔥</h2>
+<div class="card">
+  <h2>YT Downloader Mas Yoga🔥</h2>
 
-    <input type="text" id="url" placeholder="Masukkan URL YouTube">
+  <input type="text" id="url" placeholder="Masukkan URL YouTube">
 
-    <select id="type">
-      <option value="video">Video</option>
-      <option value="audio">Audio (MP3)</option>
-    </select>
+  <select id="type">
+    <option value="video">Video</option>
+    <option value="audio">Audio (MP3)</option>
+  </select>
 
-    <select id="quality">
-      <option value="">Best Quality</option>
-      <option value="1080">1080p</option>
-      <option value="720">720p</option>
-      <option value="480">480p</option>
-    </select>
+  <select id="quality">
+    <option value="">Best Quality</option>
+    <option value="1080">1080p</option>
+    <option value="720">720p</option>
+    <option value="480">480p</option>
+  </select>
 
-    <button onclick="download()">Download</button>
+  <button onclick="startDownload()">Download</button>
 
-    <div class="result" id="result"></div>
+  <div class="progress-container">
+    <div class="progress-bar" id="bar"></div>
   </div>
+</div>
 
 <script>
-async function download() {
+async function startDownload() {
   const url = document.getElementById("url").value;
   const type = document.getElementById("type").value;
   const quality = document.getElementById("quality").value;
-  const resultDiv = document.getElementById("result");
+  const bar = document.getElementById("bar");
 
   if (!url) {
-    resultDiv.innerHTML = "URL wajib diisi bang!";
+    alert("URL wajib diisi bang!");
     return;
   }
 
-  resultDiv.innerHTML = "Sedang mendownload... ⏳";
+  bar.style.width = "0%";
 
-  try {
-    const res = await fetch("/download", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ url, type, quality })
-    });
+  const res = await fetch("/download", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, type, quality })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
+  const downloadId = data.downloadId;
 
-    if (res.ok) {
-      resultDiv.innerHTML = data.message;
-    } else {
-      resultDiv.innerHTML = data.error;
+  const eventSource = new EventSource(`/progress/${downloadId}`);
+
+  eventSource.onmessage = function(event) {
+    const progressData = JSON.parse(event.data);
+
+    if (progressData.progress) {
+      bar.style.width = progressData.progress + "%";
     }
 
-  } catch (err) {
-    resultDiv.innerHTML = "Terjadi error bro 😅";
-  }
+    if (progressData.done) {
+      eventSource.close();
+      window.location.href = `/file/${downloadId}`;
+    }
+
+    if (progressData.error) {
+      eventSource.close();
+      alert("Download gagal bang 😅");
+    }
+  };
 }
 </script>
 
